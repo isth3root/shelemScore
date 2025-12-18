@@ -22,7 +22,7 @@ const PlayerInputBlock = ({
       value={player.name}
       onChange={(e) => onChangeName(e.target.value)}
       // Responsive width: w-40 on mobile, growing on larger screens
-      className="w-40 sm:w-32 md:w-full p-1.5 sm:p-2 rounded text-black mb-1 text-center text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+      className="w-40 sm:w-32 md:w-full p-1.5 sm:p-2 text-black mb-1 text-center text-sm sm:text-base border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
     />
     <div
       className="flex items-center justify-center cursor-pointer"
@@ -162,7 +162,7 @@ const Home: React.FC = () => {
 
             {/* Center decorative element (Optional - Table Visual) */}
             <div className="row-start-2 col-start-2 flex justify-center items-center opacity-30">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 border-2 border-white rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 border-2 rounded-full flex items-center justify-center">
                 <span className="text-xs">VS</span>
               </div>
             </div>
@@ -189,7 +189,7 @@ const Home: React.FC = () => {
 
           <button
             onClick={handleStart}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 mt-8 shadow-md text-sm sm:text-base"
+            className="w-full bg-blue-500 text-black hover:bg-blue-600 font-bold py-3 px-4 rounded-lg transition duration-300 mt-8 shadow-md text-sm sm:text-base"
           >
             شروع بازی
           </button>
