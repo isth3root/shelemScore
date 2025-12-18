@@ -5,7 +5,7 @@ import GameDetail from './pages/GameDetail';
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router basename='/shelemScore/'>
       <div className="min-h-screen bg-linear-to-br from-blue-500 to-purple-600 text-white" dir="rtl">
         <Routes>
           <Route path="/" element={<Home />} />

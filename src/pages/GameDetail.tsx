@@ -173,7 +173,7 @@ const GameDetail: React.FC = () => {
   useEffect(() => {
     if (gameFinished) return;
     const interval = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
+      setElapsedTime((prev: number) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
   }, [gameFinished]);
@@ -374,7 +374,6 @@ const GameDetail: React.FC = () => {
             const isTeamA = dealer ? teamA.some(player => player.name === dealer.name) : false;
             const borderColor = isTeamA ? "border-blue-400" : "border-red-400";
             const bgColor = isTeamA ? "bg-blue-400 bg-opacity-20" : "bg-red-400 bg-opacity-20";
-            const textColor = isTeamA ? "text-blue-400" : "text-red-400";
             return (
               <motion.div
                 key={chunkIndex}
@@ -392,7 +391,7 @@ const GameDetail: React.FC = () => {
                   return (
                     <motion.div
                       key={chunkIndex * 2 + setIndex}
-                      className="grid grid-cols-3 items-center bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-3 border border-white border-opacity-20 shadow-lg mb-2"
+                      className="grid grid-cols-3 items-center bg-gray-800 bg-opacity-50 backdrop-blur-md rounded-xl p-3 border border-white border-opacity-20 shadow-lg mb-2"
                     >
                       <div className="text-center text-2xl font-bold">
                         {set.cumulativeB}
@@ -400,7 +399,7 @@ const GameDetail: React.FC = () => {
                       <div className="text-center border-x border-white border-opacity-20 px-2">
                         <div className="text-lg font-semibold">{set.bid}</div>
                         <div
-                          className={`text-4xl font-black my-1 ${
+                          className={`text-5xl font-black my-1 ${
                             set.type === "shelem"
                               ? "text-green-400"
                               : set.type === "double_penalty"
@@ -412,7 +411,7 @@ const GameDetail: React.FC = () => {
                         >
                           {set.biddingTeam === "A" ? "←" : "→"}
                         </div>
-                        <div className="text-xs text-white text-opacity-80 truncate">
+                        <div className="text-md text-white text-opacity-80 truncate">
                           {set.bidderPlayer}
                         </div>
                         {set.type === "shelem" && (
@@ -432,7 +431,7 @@ const GameDetail: React.FC = () => {
                     </motion.div>
                   );
                 })}
-                <div className={`text-center text-sm ${textColor} font-semibold mt-2`}>
+                <div className="text-center text-md text-black bg-opacity-50 font-semibold mt-2 rounded px-2">
                   {dealerName}
                 </div>
               </motion.div>
@@ -492,7 +491,7 @@ const GameDetail: React.FC = () => {
                   {
                     label: "بازیکن پیشنهاد دهنده",
                     value: bidderPlayer,
-                    onChange: (e) => setBidderPlayer(e.target.value),
+                    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setBidderPlayer(e.target.value),
                     options: (biddingTeam === "A" ? teamA : teamB).map((p) => ({
                       label: p.name,
                       value: p.name,
@@ -501,7 +500,7 @@ const GameDetail: React.FC = () => {
                   {
                     label: "مقدار پیشنهاد",
                     value: bid,
-                    onChange: (e) => setBid(Number(e.target.value)),
+                    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setBid(Number(e.target.value)),
                     options: Array.from(
                       { length: (165 - 100) / 5 + 1 },
                       (_, i) => ({ label: 100 + i * 5, value: 100 + i * 5 })
@@ -510,7 +509,7 @@ const GameDetail: React.FC = () => {
                   {
                     label: "امتیاز تیم مدافع",
                     value: defenderPoints,
-                    onChange: (e) => setDefenderPoints(Number(e.target.value)),
+                    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setDefenderPoints(Number(e.target.value)),
                     options: Array.from({ length: 165 / 5 + 1 }, (_, i) => ({
                       label: i * 5,
                       value: i * 5,
@@ -559,9 +558,19 @@ const GameDetail: React.FC = () => {
         {showPlayerModal && (
           <Modal closeModal={closePlayerModal}>
             <div className="p-6 text-white w-full h-full overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-4 text-center">
-                امتیازات بازیکنان
-              </h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">
+                  امتیازات بازیکنان
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { localStorage.clear(); navigate("/"); }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300"
+                >
+                  بازی جدید
+                </motion.button>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-center">
                   <thead>
