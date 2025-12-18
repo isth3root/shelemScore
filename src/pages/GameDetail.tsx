@@ -1,22 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaPlus, FaUsers, FaTimes } from "react-icons/fa";
-
-// --- Interfaces (No Change) ---
-interface Player {
-  name: string;
-  isDealer: boolean;
-}
-
-interface Set {
-  bid: number;
-  teamA: number;
-  teamB: number;
-  biddingTeam: "A" | "B";
-  bidderPlayer: string;
-  type: "normal" | "shelem" | "double_penalty";
-}
+import { type Player } from "../types/game";
+import { type Set } from "../types/game";
 
 // --- Reusable UI Components ---
 
@@ -72,6 +59,7 @@ const FloatingActionButton: React.FC<{
 
 const GameDetail: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // --- State and Refs (No Change) ---
   const [teamA, setTeamA] = useState<Player[]>(() => {
@@ -183,11 +171,12 @@ const GameDetail: React.FC = () => {
 
   // --- Effects (No Change) ---
   useEffect(() => {
+    if (gameFinished) return;
     const interval = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [gameFinished]);
 
   useEffect(() => {
     const totalA = sets.reduce((sum, set) => sum + set.teamA, 0);
@@ -327,7 +316,7 @@ const GameDetail: React.FC = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => window.location.reload()}
+            onClick={() => { localStorage.clear(); navigate("/"); }}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 text-xl shadow-lg"
           >
             بازی جدید
@@ -353,6 +342,13 @@ const GameDetail: React.FC = () => {
     }
   );
 
+  const allPlayers = [teamA[1], teamB[1], teamA[0], teamB[0]].filter(p => p !== undefined);
+  const initialDealerIndex = allPlayers.findIndex(p => p.isDealer);
+  const chunkedRows: (Set & { cumulativeA: number; cumulativeB: number })[][] = [];
+  for (let i = 0; i < cumulativeScores.rows.length; i += 2) {
+    chunkedRows.push(cumulativeScores.rows.slice(i, i + 2));
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-900 to-indigo-900 text-white p-4 font-sans">
       <header className="text-center mb-6">
@@ -360,66 +356,84 @@ const GameDetail: React.FC = () => {
           {formatTime(elapsedTime)}
         </div>
         <div className="flex justify-between items-center mt-2 text-xl">
-          <div className="font-bold text-blue-400">
-            تیم A: {cumulativeScores.totalA}
-          </div>
           <div className="font-bold text-red-400">
             تیم B: {cumulativeScores.totalB}
+          </div>
+          <div className="font-bold text-blue-400">
+            تیم A: {cumulativeScores.totalA}
           </div>
         </div>
       </header>
 
       <main className="space-y-3 pb-24">
         <AnimatePresence>
-          {cumulativeScores.rows.map((set, index) => {
-            const biddingResult =
-              165 - (set.biddingTeam === "A" ? set.teamB : set.teamA);
-            const wasSuccessful = biddingResult >= set.bid;
-
+          {chunkedRows.map((chunk, chunkIndex) => {
+            const dealerIndex = (initialDealerIndex - chunkIndex + allPlayers.length) % allPlayers.length;
+            const dealer = allPlayers[dealerIndex];
+            const dealerName = dealer ? dealer.name : "Unknown";
+            const isTeamA = dealer ? teamA.some(player => player.name === dealer.name) : false;
+            const borderColor = isTeamA ? "border-blue-400" : "border-red-400";
+            const bgColor = isTeamA ? "bg-blue-400 bg-opacity-20" : "bg-red-400 bg-opacity-20";
+            const textColor = isTeamA ? "text-blue-400" : "text-red-400";
             return (
               <motion.div
-                key={index}
+                key={chunkIndex}
                 layout
                 initial={{ opacity: 0, y: 50, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -50 }}
                 transition={{ type: "spring", damping: 20, stiffness: 200 }}
-                className="grid grid-cols-3 items-center bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-3 border border-white border-opacity-20 shadow-lg"
+                className={`${bgColor} border-2 ${borderColor} rounded-xl p-3`}
               >
-                <div className="text-center text-2xl font-bold">
-                  {set.cumulativeA}
-                </div>
-                <div className="text-center border-x border-white border-opacity-20 px-2">
-                  <div className="text-lg font-semibold">{set.bid}</div>
-                  <div
-                    className={`text-4xl font-black my-1 ${
-                      set.type === "shelem"
-                        ? "text-green-400"
-                        : set.type === "double_penalty"
-                        ? "text-red-400"
-                        : wasSuccessful
-                        ? "text-green-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    {set.biddingTeam === "A" ? "→" : "←"}
-                  </div>
-                  <div className="text-xs text-white text-opacity-80 truncate">
-                    {set.bidderPlayer}
-                  </div>
-                  {set.type === "shelem" && (
-                    <div className="text-green-400 font-bold text-xs mt-1">
-                      شلم
-                    </div>
-                  )}
-                  {set.type === "double_penalty" && (
-                    <div className="text-red-400 font-bold text-xs mt-1">
-                      دوبل منفی
-                    </div>
-                  )}
-                </div>
-                <div className="text-center text-2xl font-bold">
-                  {set.cumulativeB}
+                {chunk.map((set, setIndex) => {
+                  const biddingResult =
+                    165 - (set.biddingTeam === "A" ? set.teamB : set.teamA);
+                  const wasSuccessful = biddingResult >= set.bid;
+                  return (
+                    <motion.div
+                      key={chunkIndex * 2 + setIndex}
+                      className="grid grid-cols-3 items-center bg-white bg-opacity-10 backdrop-blur-md rounded-xl p-3 border border-white border-opacity-20 shadow-lg mb-2"
+                    >
+                      <div className="text-center text-2xl font-bold">
+                        {set.cumulativeB}
+                      </div>
+                      <div className="text-center border-x border-white border-opacity-20 px-2">
+                        <div className="text-lg font-semibold">{set.bid}</div>
+                        <div
+                          className={`text-4xl font-black my-1 ${
+                            set.type === "shelem"
+                              ? "text-green-400"
+                              : set.type === "double_penalty"
+                              ? "text-red-400"
+                              : wasSuccessful
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
+                        >
+                          {set.biddingTeam === "A" ? "←" : "→"}
+                        </div>
+                        <div className="text-xs text-white text-opacity-80 truncate">
+                          {set.bidderPlayer}
+                        </div>
+                        {set.type === "shelem" && (
+                          <div className="text-green-400 font-bold text-xs mt-1">
+                            شلم
+                          </div>
+                        )}
+                        {set.type === "double_penalty" && (
+                          <div className="text-red-400 font-bold text-xs mt-1">
+                            دوبل منفی
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center text-2xl font-bold">
+                        {set.cumulativeA}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+                <div className={`text-center text-sm ${textColor} font-semibold mt-2`}>
+                  {dealerName}
                 </div>
               </motion.div>
             );
