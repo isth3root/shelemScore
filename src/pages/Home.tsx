@@ -21,7 +21,6 @@ const PlayerInputBlock = ({
       placeholder={placeholder}
       value={player.name}
       onChange={(e) => onChangeName(e.target.value)}
-      // Responsive width: w-40 on mobile, growing on larger screens
       className="w-40 sm:w-32 md:w-full p-1.5 sm:p-2 text-black mb-1 text-center text-sm sm:text-base border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
     />
     <div
@@ -109,8 +108,17 @@ const Home: React.FC = () => {
 
   const handleStart = () => {
     const allNames = [...teamA, ...teamB].map(p => p.name);
+    if (allNames.some(name => name.trim() === "")) {
+      alert('All player names must be filled.');
+      return;
+    }
     if (allNames.some(name => name.length > 10)) {
-      alert('Each player name must be at last 10 characters long.');
+      alert('Each player name must be at most 10 characters long.');
+      return;
+    }
+    const hasDealer = [...teamA, ...teamB].some(p => p.isDealer);
+    if (!hasDealer) {
+      alert('Please select a dealer.');
       return;
     }
     navigate("/game", { state: { teamA, teamB } });
@@ -143,7 +151,7 @@ const Home: React.FC = () => {
             {/* Row 1: Top Center */}
             <div className="col-start-2">
               <PlayerInputBlock
-                placeholder="Top (A)"
+                placeholder="بالا (A)"
                 player={teamA[0]}
                 onChangeName={(val) => handlePlayerChange("A", 0, val)}
                 onChangeDealer={() => handleDealerChange("A", 0)}
@@ -153,7 +161,7 @@ const Home: React.FC = () => {
             {/* Row 2: Left, Center(Empty), Right */}
             <div className="col-start-1 row-start-2">
               <PlayerInputBlock
-                placeholder="Left (B)"
+                placeholder="چپ (B)"
                 player={teamB[0]}
                 onChangeName={(val) => handlePlayerChange("B", 0, val)}
                 onChangeDealer={() => handleDealerChange("B", 0)}
@@ -169,7 +177,7 @@ const Home: React.FC = () => {
 
             <div className="col-start-3 row-start-2">
               <PlayerInputBlock
-                placeholder="Right (B)"
+                placeholder="راست (B)"
                 player={teamB[1]}
                 onChangeName={(val) => handlePlayerChange("B", 1, val)}
                 onChangeDealer={() => handleDealerChange("B", 1)}
@@ -179,7 +187,7 @@ const Home: React.FC = () => {
             {/* Row 3: Bottom Center */}
             <div className="col-start-2 row-start-3">
               <PlayerInputBlock
-                placeholder="Bottom (A)"
+                placeholder="پایین (A)"
                 player={teamA[1]}
                 onChangeName={(val) => handlePlayerChange("A", 1, val)}
                 onChangeDealer={() => handleDealerChange("A", 1)}
