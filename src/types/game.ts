@@ -9,5 +9,14 @@ export interface Set {
   teamB: number;
   biddingTeam: "A" | "B";
   bidderPlayer: string;
-  type: "normal" | "shelem" | "double_penalty";
+  type: "normal" | "shelem" | "double_shelem" | "double_penalty";
 }
+
+export type GameSettings = {
+  withJoker: boolean;
+  targetScore: number;
+  sets: number;
+  doublePenalty: boolean;
+  shelemScore: number | string;
+  mode: "target" | "sets";
+};
