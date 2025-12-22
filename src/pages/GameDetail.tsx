@@ -80,8 +80,8 @@ const GameDetail: React.FC = () => {
   });
   const [showAddSetModal, setShowAddSetModal] = useState(false);
   const [biddingTeam, setBiddingTeam] = useState<"A" | "B">("A");
-  const [bid, setBid] = useState(100);
-  const [defenderPoints, setDefenderPoints] = useState(65);
+  const [bid, setBid] = useState(125);
+  const [defenderPoints, setDefenderPoints] = useState(30);
   const [bidderPlayer, setBidderPlayer] = useState("");
   const [gameFinished, setGameFinished] = useState(false);
   const [winner, setWinner] = useState<"A" | "B" | null>(null);
@@ -207,13 +207,13 @@ const GameDetail: React.FC = () => {
         type = "double_shelem";
         biddingScore =
           gameSettings.shelemScore === "double"
-            ? 660
+            ? 2 * bid
             : 2 * Number(gameSettings.shelemScore);
       } else {
         type = "shelem";
         biddingScore =
           gameSettings.shelemScore === "double"
-            ? 330
+            ? 2 * bid
             : Number(gameSettings.shelemScore);
       }
     } else if (!bidderSucceeded && gameSettings.doublePenalty) {
@@ -238,8 +238,8 @@ const GameDetail: React.FC = () => {
 
     handleCloseModal();
     // Reset form for next round
-    setBid(100);
-    setDefenderPoints(65);
+    setBid(125);
+    setDefenderPoints(30);
   };
 
   const handleNewGame = () => {
@@ -535,7 +535,7 @@ const GameDetail: React.FC = () => {
                     onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
                       setBid(Number(e.target.value)),
                     options: (() => {
-                      const minBid = gameSettings?.doublePenalty ? 85 : 70;
+                      const minBid = gameSettings?.withJoker ? 100 : (gameSettings?.doublePenalty ? 85 : 70);
                       const maxBid = gameSettings?.withJoker ? 195 : 160;
                       const shelemBid = gameSettings?.withJoker ? 200 : 165;
                       const doubleShelemBid = gameSettings?.withJoker ? 400 : 330;

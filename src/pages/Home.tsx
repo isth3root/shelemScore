@@ -222,6 +222,12 @@ const Home: React.FC = () => {
       const displayValue = value === "double" ? "دوبل" : value;
       toast.success(`امتیاز شلم به ${displayValue} تغییر کرد`);
     } else if (key === "withJoker") {
+      // Update shelemScore if it's not valid for the new joker setting
+      if (value && gameSettings.shelemScore === 330) {
+        setGameSettings((prev) => ({ ...prev, shelemScore: 400 }));
+      } else if (!value && gameSettings.shelemScore === 400) {
+        setGameSettings((prev) => ({ ...prev, shelemScore: 330 }));
+      }
       toast.success(`جوکر ${value ? "فعال" : "غیرفعال"} شد`);
     } else if (key === "doublePenalty") {
       toast.success(`دوبل منفی ${value ? "فعال" : "غیرفعال"} شد`);
@@ -333,12 +339,32 @@ const Home: React.FC = () => {
                       امتیاز شلم
                     </label>
                     <Select
-                      options={[
-                        { value: 165 as number | string, label: "165 امتیاز" },
-                        { value: 330 as number | string, label: "330 امتیاز" },
-                        { value: "double" as number | string, label: "دوبل" },
-                      ]}
-                      defaultValue={{ value: 330 as number | string, label: "330 امتیاز" }}
+                      options={
+                        gameSettings.withJoker
+                          ? [
+                              { value: 200 as number | string, label: "200 امتیاز" },
+                              { value: 400 as number | string, label: "400 امتیاز" },
+                              { value: "double" as number | string, label: "دوبل" },
+                            ]
+                          : [
+                              { value: 165 as number | string, label: "165 امتیاز" },
+                              { value: 330 as number | string, label: "330 امتیاز" },
+                              { value: "double" as number | string, label: "دوبل" },
+                            ]
+                      }
+                      value={
+                        gameSettings.withJoker
+                          ? gameSettings.shelemScore === 200
+                            ? { value: 200 as number | string, label: "200 امتیاز" }
+                            : gameSettings.shelemScore === 400
+                            ? { value: 400 as number | string, label: "400 امتیاز" }
+                            : { value: "double" as number | string, label: "دوبل" }
+                          : gameSettings.shelemScore === 165
+                          ? { value: 165 as number | string, label: "165 امتیاز" }
+                          : gameSettings.shelemScore === 330
+                          ? { value: 330 as number | string, label: "330 امتیاز" }
+                          : { value: "double" as number | string, label: "دوبل" }
+                      }
                       onChange={(opt) =>
                         opt && handleSettingsChange("shelemScore", opt.value)
                       }
