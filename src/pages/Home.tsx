@@ -246,7 +246,9 @@ const Home: React.FC = () => {
     // Only show toast if the clicked player was not already dealer
     if (!isAlreadyDealer) {
       const dealerName = currentTeam[index]?.name || `${team}${index + 1}`;
-      toast.success(`دیلر به ${dealerName} تغییر کرد`);
+      toast.success(`دیلر به ${dealerName} تغییر کرد`, {
+        duration: 3000
+      });
     }
   };
 
@@ -278,12 +280,16 @@ const Home: React.FC = () => {
     );
 
     // Show swap toast
-    toast.success(`جای ${name1 || "Player"} و ${name2 || "Player"} عوض شد`);
+    toast.success(`جای ${name1 || "Player"} و ${name2 || "Player"} عوض شد`, {
+      duration: 3000
+    });
     
     // Show dealer change toast if dealer was swapped
     if (wasPlayer1Dealer || wasPlayer2Dealer) {
       const dealerName = wasPlayer1Dealer ? (name2 || `${team2}${index2 + 1}`) : (name1 || `${team1}${index1 + 1}`);
-      toast.success(`دیلر به ${dealerName} تغییر کرد`);
+      toast.success(`دیلر به ${dealerName} تغییر کرد`, {
+        duration: 3000
+      });
     }
   };
 
@@ -291,7 +297,9 @@ const Home: React.FC = () => {
     setGameSettings((prev) => ({ ...prev, [key]: value }));
     if (key === "shelemScore") {
       const displayValue = value === "double" ? "دوبل" : value;
-      toast.success(`امتیاز شلم به ${displayValue} تغییر کرد`);
+      toast.success(`امتیاز شلم به ${displayValue} تغییر کرد`, {
+        duration: 2000
+      });
     } else if (key === "withJoker") {
       // Update shelemScore if it's not valid for the new joker setting
       if (value && gameSettings.shelemScore === 330) {
@@ -299,9 +307,13 @@ const Home: React.FC = () => {
       } else if (!value && gameSettings.shelemScore === 400) {
         setGameSettings((prev) => ({ ...prev, shelemScore: 330 }));
       }
-      toast.success(`جوکر ${value ? "فعال" : "غیرفعال"} شد`);
+      toast.success(`جوکر ${value ? "فعال" : "غیرفعال"} شد`, {
+        duration: 2000
+      });
     } else if (key === "doublePenalty") {
-      toast.success(`دوبل منفی ${value ? "فعال" : "غیرفعال"} شد`);
+      toast.success(`دوبل منفی ${value ? "فعال" : "غیرفعال"} شد`, {
+        duration: 2000
+      });
     }
   };
 
@@ -309,17 +321,23 @@ const Home: React.FC = () => {
     console.log("Start");
     const allNames = [...teamA, ...teamB].map((p) => p.name);
     if (allNames.some((name) => name.trim() === "")) {
-      toast.error("لطفاً نام همه بازیکنان را وارد کنید.");
+      toast.error("لطفاً نام همه بازیکنان را وارد کنید.", {
+        duration: 3000
+      });
       console.log("Error: empty names");
       console.log("Error dealer");
       return;
     }
     if (![...teamA, ...teamB].some((p) => p.isDealer)) {
-      toast.error("با کلیک روی آواتار، دیلر را انتخاب کنید.");
+      toast.error("با کلیک روی آواتار، دیلر را انتخاب کنید.", {
+        duration: 3000
+      });
       return;
     }
     console.log("Start");
-    toast.success("بازی شروع شد!");
+    toast.success("بازی شروع شد!", {
+      duration: 2000
+    });
     navigate("/game", { state: { teamA, teamB, gameSettings } });
   };
 
