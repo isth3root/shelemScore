@@ -12,6 +12,7 @@ import {
   Gamepad2,
   CheckCircle2,
   Settings2,
+  Repeat, // Imported Repeat Icon
 } from "lucide-react";
 import { type Player } from "../types/game";
 
@@ -26,10 +27,13 @@ type GameSettings = {
 };
 
 // --- Animations ---
-const springTransition = { type: "spring" as const, stiffness: 300, damping: 20 };
+const springTransition = {
+  type: "spring" as const,
+  stiffness: 300,
+  damping: 20,
+};
 
 // --- Components ---
-
 const DealerChip = () => (
   <motion.div
     layoutId="dealer-chip"
@@ -90,11 +94,9 @@ const PlayerSeat = ({
             <div className={`absolute inset-0 bg-${teamColor}-500/20`} />
           )}
         </div>
-
         {/* The Magic Flying Dealer Chip */}
         {player.isDealer && <DealerChip />}
       </motion.div>
-
       {/* Input Field */}
       <motion.input
         initial={{ opacity: 0, y: 10 }}
@@ -127,13 +129,40 @@ const ToggleSwitch = ({
       transition={{
         type: "spring" as const,
         stiffness: 600,
-        damping: 11
+        damping: 11,
       }}
       className="bg-white w-6 h-6 rounded-full shadow-md"
     />
   </div>
 );
 
+// --- New Swap Button Component ---
+const SwapPlayersButton = ({
+  position,
+  onSwap,
+}: {
+  position: "top-right" | "bottom-right" | "bottom-left" | "top-left";
+  onSwap: () => void;
+}) => {
+  const positionClasses = {
+    "top-right": "top-[15%] right-[15%] sm:top-[20%] sm:right-[20%]",
+    "bottom-right": "bottom-[15%] right-[15%] sm:bottom-[20%] sm:right-[20%]",
+    "bottom-left": "bottom-[15%] left-[15%] sm:bottom-[20%] sm:left-[20%]",
+    "top-left": "top-[15%] left-[15%] sm:top-[20%] sm:left-[20%]",
+  };
+
+  return (
+    <motion.button
+      onClick={onSwap}
+      className={`absolute ${positionClasses[position]} z-30 w-8 h-8 rounded-full bg-black/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white/60 hover:bg-purple-500/30 hover:text-white transition-all transform -translate-x-1/2 -translate-y-1/2`}
+      whileHover={{ scale: 1.2, rotate: 90 }}
+      whileTap={{ scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+    >
+      <Repeat className="w-4 h-4" />
+    </motion.button>
+  );
+};
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -205,15 +234,57 @@ const Home: React.FC = () => {
   const handleDealerChange = (team: "A" | "B", index: number) => {
     const setA = team === "A" ? setTeamA : setTeamB; // Current Team
     const setB = team === "A" ? setTeamB : setTeamA; // Other Team
+    
+    // Get the current team to check if the clicked player is already dealer
+    const currentTeam = team === "A" ? teamA : teamB;
+    const isAlreadyDealer = currentTeam[index]?.isDealer;
 
     // Using functional updates to ensure we don't need dependencies
     setA((prev) => prev.map((p, i) => ({ ...p, isDealer: i === index })));
     setB((prev) => prev.map((p) => ({ ...p, isDealer: false })));
 
-    // Get the dealer name
-    const currentTeam = team === "A" ? teamA : teamB;
-    const dealerName = currentTeam[index]?.name || `${team}${index + 1}`;
-    toast.success(`دیلر به ${dealerName} تغییر کرد`);
+    // Only show toast if the clicked player was not already dealer
+    if (!isAlreadyDealer) {
+      const dealerName = currentTeam[index]?.name || `${team}${index + 1}`;
+      toast.success(`دیلر به ${dealerName} تغییر کرد`);
+    }
+  };
+
+  // --- New Player Swap Handler ---
+  const handleSwapPlayers = (
+    team1: "A" | "B",
+    index1: number,
+    team2: "A" | "B",
+    index2: number
+  ) => {
+    const player1 = (team1 === "A" ? teamA : teamB)[index1];
+    const player2 = (team2 === "A" ? teamA : teamB)[index2];
+    
+    const name1 = player1.name;
+    const name2 = player2.name;
+    
+    // Check if either player was dealer
+    const wasPlayer1Dealer = player1.isDealer;
+    const wasPlayer2Dealer = player2.isDealer;
+
+    const setter1 = team1 === "A" ? setTeamA : setTeamB;
+    const setter2 = team2 === "A" ? setTeamA : setTeamB;
+
+    setter1((prev) =>
+      prev.map((p, i) => (i === index1 ? { ...p, name: name2 } : p))
+    );
+    setter2((prev) =>
+      prev.map((p, i) => (i === index2 ? { ...p, name: name1 } : p))
+    );
+
+    // Show swap toast
+    toast.success(`جای ${name1 || "Player"} و ${name2 || "Player"} عوض شد`);
+    
+    // Show dealer change toast if dealer was swapped
+    if (wasPlayer1Dealer || wasPlayer2Dealer) {
+      const dealerName = wasPlayer1Dealer ? (name2 || `${team2}${index2 + 1}`) : (name1 || `${team1}${index1 + 1}`);
+      toast.success(`دیلر به ${dealerName} تغییر کرد`);
+    }
   };
 
   const handleSettingsChange = (key: keyof GameSettings, value: unknown) => {
@@ -291,7 +362,6 @@ const Home: React.FC = () => {
         {/* Background Ambience */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(76,29,149,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-purple-500/30 to-transparent" />
-
         <AnimatePresence mode="wait">
           {!showInputs ? (
             <motion.button
@@ -332,7 +402,6 @@ const Home: React.FC = () => {
                       تنظیمات بازی
                     </h2>
                   </div>
-
                   {/* Shelem Score Dropdown at the top */}
                   <div className="p-3 bg-white/5 rounded-2xl mb-6">
                     <label className="text-xs text-gray-400 uppercase font-bold mb-2 block">
@@ -342,28 +411,64 @@ const Home: React.FC = () => {
                       options={
                         gameSettings.withJoker
                           ? [
-                              { value: 200 as number | string, label: "200 امتیاز" },
-                              { value: 400 as number | string, label: "400 امتیاز" },
-                              { value: "double" as number | string, label: "دوبل" },
+                              {
+                                value: 200 as number | string,
+                                label: "200 امتیاز",
+                              },
+                              {
+                                value: 400 as number | string,
+                                label: "400 امتیاز",
+                              },
+                              {
+                                value: "double" as number | string,
+                                label: "دوبل",
+                              },
                             ]
                           : [
-                              { value: 165 as number | string, label: "165 امتیاز" },
-                              { value: 330 as number | string, label: "330 امتیاز" },
-                              { value: "double" as number | string, label: "دوبل" },
+                              {
+                                value: 165 as number | string,
+                                label: "165 امتیاز",
+                              },
+                              {
+                                value: 330 as number | string,
+                                label: "330 امتیاز",
+                              },
+                              {
+                                value: "double" as number | string,
+                                label: "دوبل",
+                              },
                             ]
                       }
                       value={
                         gameSettings.withJoker
                           ? gameSettings.shelemScore === 200
-                            ? { value: 200 as number | string, label: "200 امتیاز" }
+                            ? {
+                                value: 200 as number | string,
+                                label: "200 امتیاز",
+                              }
                             : gameSettings.shelemScore === 400
-                            ? { value: 400 as number | string, label: "400 امتیاز" }
-                            : { value: "double" as number | string, label: "دوبل" }
+                            ? {
+                                value: 400 as number | string,
+                                label: "400 امتیاز",
+                              }
+                            : {
+                                value: "double" as number | string,
+                                label: "دوبل",
+                              }
                           : gameSettings.shelemScore === 165
-                          ? { value: 165 as number | string, label: "165 امتیاز" }
+                          ? {
+                              value: 165 as number | string,
+                              label: "165 امتیاز",
+                            }
                           : gameSettings.shelemScore === 330
-                          ? { value: 330 as number | string, label: "330 امتیاز" }
-                          : { value: "double" as number | string, label: "دوبل" }
+                          ? {
+                              value: 330 as number | string,
+                              label: "330 امتیاز",
+                            }
+                          : {
+                              value: "double" as number | string,
+                              label: "دوبل",
+                            }
                       }
                       onChange={(opt) =>
                         opt && handleSettingsChange("shelemScore", opt.value)
@@ -372,7 +477,6 @@ const Home: React.FC = () => {
                       isSearchable={false}
                     />
                   </div>
-
                   {/* Mode Select */}
                   <div className="grid grid-cols-2 gap-3 mb-6">
                     {["target", "sets"].map((m) => (
@@ -404,7 +508,6 @@ const Home: React.FC = () => {
                       </motion.button>
                     ))}
                   </div>
-
                   {/* Score / Sets Grid */}
                   <div className="grid grid-cols-4 gap-2 mb-6">
                     {(gameSettings.mode === "target"
@@ -433,7 +536,6 @@ const Home: React.FC = () => {
                       </button>
                     ))}
                   </div>
-
                   {/* Toggles List */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl">
@@ -448,7 +550,6 @@ const Home: React.FC = () => {
                         onChange={(v) => handleSettingsChange("withJoker", v)}
                       />
                     </div>
-
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-red-500/20 text-red-400 rounded-lg">
@@ -466,7 +567,6 @@ const Home: React.FC = () => {
                   </div>
                 </div>
               </div>
-
               {/* Right Col: The Table (Visual) */}
               <div className="lg:col-span-7 flex flex-col">
                 <div className="flex-1 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 relative flex items-center justify-center overflow-hidden shadow-2xl">
@@ -476,7 +576,6 @@ const Home: React.FC = () => {
                       <Trophy className="w-12 h-12 text-white/5" />
                     </div>
                   </div>
-
                   {/* --- The Players (Satellite Layout) --- */}
                   <div className="relative w-70 h-70 sm:w-87.5 sm:h-87.5">
                     {/* Top: Team A-1 */}
@@ -488,7 +587,6 @@ const Home: React.FC = () => {
                       onChangeName={(n) => handlePlayerChange("A", 0, n)}
                       onChangeDealer={() => handleDealerChange("A", 0)}
                     />
-
                     {/* Bottom: Team A-2 */}
                     <PlayerSeat
                       position="bottom"
@@ -498,7 +596,6 @@ const Home: React.FC = () => {
                       onChangeName={(n) => handlePlayerChange("A", 1, n)}
                       onChangeDealer={() => handleDealerChange("A", 1)}
                     />
-
                     {/* Left: Team B-1 */}
                     <PlayerSeat
                       position="left"
@@ -508,7 +605,6 @@ const Home: React.FC = () => {
                       onChangeName={(n) => handlePlayerChange("B", 0, n)}
                       onChangeDealer={() => handleDealerChange("B", 0)}
                     />
-
                     {/* Right: Team B-2 */}
                     <PlayerSeat
                       position="right"
@@ -518,9 +614,25 @@ const Home: React.FC = () => {
                       onChangeName={(n) => handlePlayerChange("B", 1, n)}
                       onChangeDealer={() => handleDealerChange("B", 1)}
                     />
+                    {/* --- Swap Buttons --- */}
+                    <SwapPlayersButton
+                      position="top-right"
+                      onSwap={() => handleSwapPlayers("A", 0, "B", 1)}
+                    />
+                    <SwapPlayersButton
+                      position="bottom-right"
+                      onSwap={() => handleSwapPlayers("A", 1, "B", 1)}
+                    />
+                    <SwapPlayersButton
+                      position="bottom-left"
+                      onSwap={() => handleSwapPlayers("A", 1, "B", 0)}
+                    />
+                    <SwapPlayersButton
+                      position="top-left"
+                      onSwap={() => handleSwapPlayers("A", 0, "B", 0)}
+                    />
                   </div>
                 </div>
-
                 {/* Start Button */}
                 <motion.button
                   type="button"
