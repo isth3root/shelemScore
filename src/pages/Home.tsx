@@ -119,18 +119,21 @@ const ToggleSwitch = ({
   <div
     onClick={() => onChange(!checked)}
     className={`w-14 h-8 rounded-full flex items-center p-1 cursor-pointer transition-colors duration-300 ${
-      checked ? "bg-green-500" : "bg-white/10"
+      checked ? "bg-green-500 justify-start" : "bg-white/10 justify-end"
     }`}
   >
     <motion.div
       layout
-      transition={springTransition}
-      className={`bg-white w-6 h-6 rounded-full shadow-md ${
-        checked ? "ml-auto" : ""
-      }`}
+      transition={{
+        type: "spring" as const,
+        stiffness: 600,
+        damping: 11
+      }}
+      className="bg-white w-6 h-6 rounded-full shadow-md"
     />
   </div>
 );
+
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -278,7 +281,7 @@ const Home: React.FC = () => {
   return (
     <>
       <Toaster position="top-center" />
-      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background Ambience */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(76,29,149,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-purple-500/30 to-transparent" />

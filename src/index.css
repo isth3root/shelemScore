@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Arad';
+  src: url('/font/Arad-Medium.ttf') format('truetype');
+}
+
 body {
-  font-family: 'Vazirmatn', sans-serif;
+  font-family: 'Arad', sans-serif;
 }

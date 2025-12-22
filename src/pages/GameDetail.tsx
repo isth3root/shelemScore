@@ -340,7 +340,7 @@ const GameDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 to-indigo-900 text-white p-4 font-sans">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 to-indigo-900 text-white p-4">
       <header className="sticky top-0 z-30 bg-gray-900/80 backdrop-blur-md py-4 px-2 text-center shadow-lg rounded-b-2xl">
         <div className="text-4xl font-bold tracking-widest">
           {formatTime(elapsedTime)}
